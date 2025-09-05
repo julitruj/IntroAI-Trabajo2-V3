@@ -402,7 +402,7 @@ with tab1:
                 
                 try:
                     # Optimizado: Llamada única al LLM para procesamiento en lote
-                    status_text.text("🚀 Procesando todos los archivos con LLM en lote (más rápido)...")
+                    status_text.text("🚀 Procesando todos los archivos con LLM en lote, espera unos minutos...")
                     progress_bar.progress(50)
                     
                     st.write(f"🔬 Analizando {len(processed_files)} archivos en lote...")
