@@ -212,7 +212,7 @@ def display_message_assignments(assignments: List[Dict[str, Any]], conversations
             "Sentimiento": assign.get('sentiment_label', 'Desconocido'),
             "Puntaje de Sentimiento": f"{assign.get('sentiment_score', 0):.2f}",
             "Emoción (GEW)": assign.get('familia_gew', 'Desconocido'),
-            "Intensidad de Emoción": f"{assign.get('intensidad', 0)}/5",
+            "Confianza": f"{assign.get('intensidad', 0)}/5",
             "Valencia": f"{assign.get('valencia', 0):.2f}"
         }
         for assign in sample_assignments
