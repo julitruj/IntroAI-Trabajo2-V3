@@ -325,7 +325,7 @@ with st.sidebar:
         st.warning(f"Por favor proporcione la clave API de {provider} para continuar")
 
 # Área de contenido principal
-tab1, tab2, tab3 = st.tabs(["📁 Subir y Procesar", "📊 Panel", "📥 Exportar"])
+tab1, tab2, tab3 = st.tabs(["📁 Subir y Procesar", "📊 Dashboard", "📥 Exportar"])
 
 with tab1:
     st.header("Subir Archivos de Interacciones con Clientes")
