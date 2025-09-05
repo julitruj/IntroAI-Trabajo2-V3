@@ -61,6 +61,9 @@ Choose from these categories:
 - **formación**: Training/education
 - **política**: Policy change
 
+## Output lenguague
+Asegurate que todos los textos de output esten en Español Estandard
+
 ## Output JSON Schema
 
 ```json
