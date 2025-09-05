@@ -96,7 +96,7 @@ def display_kpis(kpis: Dict[str, Any]):
             help=f"Promotores: {nps_data.get('promoters', 0)}%, Detractores: {nps_data.get('detractors', 0)}%, Pasivos: {nps_data.get('passives', 0)}%"
         )
         if nps_data.get('simulated'):
-            st.caption("*Simulado por LLM")
+            st.caption("*Estimado por LLM")
     
     with col2:
         csat_data = kpis.get('csat', {})
@@ -106,7 +106,7 @@ def display_kpis(kpis: Dict[str, Any]):
             value=f"{csat_value:.1f}/5.0",
         )
         if csat_data.get('simulated'):
-            st.caption("*Simulado por LLM")
+            st.caption("*Estimado por LLM")
     
     with col3:
         sentiment_data = kpis.get('sentiment', {})
