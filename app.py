@@ -11,15 +11,15 @@ from typing import List, Dict, Any, Optional
 import PyPDF2
 from llm_backend import LLMBackend, ModelConfig
 
-# Page configuration
+# Configuración de la página
 st.set_page_config(
-    page_title="VoC Analyst - LLM-Powered Voice of Customer Analysis",
+    page_title="VoC Analyst - Análisis de Voz del Cliente con LLM",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
+# Inicializar el estado de la sesión
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = None
 if 'run_id' not in st.session_state:
@@ -30,7 +30,7 @@ if 'processing_complete' not in st.session_state:
     st.session_state.processing_complete = False
 
 def extract_text_from_pdf(pdf_file) -> str:
-    """Extract text from PDF file"""
+    """Extraer texto de archivo PDF"""
     try:
         pdf_reader = PyPDF2.PdfReader(pdf_file)
         text = ""
@@ -38,23 +38,23 @@ def extract_text_from_pdf(pdf_file) -> str:
             text += page.extract_text() + "\n"
         return text.strip()
     except Exception as e:
-        st.error(f"Error extracting text from PDF: {str(e)}")
+        st.error(f"Error al extraer texto de PDF: {str(e)}")
         return ""
 
 def validate_file_size(file) -> bool:
-    """Validate file size is under 100MB"""
-    file.seek(0, 2)  # Move to end of file
+    """Validar que el tamaño del archivo sea menor a 100MB"""
+    file.seek(0, 2)  # Mover al final del archivo
     size = file.tell()
-    file.seek(0)  # Reset to beginning
+    file.seek(0)  # Reiniciar al inicio
     return size <= 100 * 1024 * 1024  # 100MB
 
 def process_uploaded_files(uploaded_files) -> List[Dict[str, Any]]:
-    """Process uploaded files and extract text content"""
+    """Procesar archivos subidos y extraer contenido de texto"""
     processed_files = []
     
     for file in uploaded_files:
         if not validate_file_size(file):
-            st.error(f"File {file.name} exceeds 100MB limit")
+            st.error(f"El archivo {file.name} excede el límite de 100MB")
             continue
             
         try:
@@ -63,7 +63,7 @@ def process_uploaded_files(uploaded_files) -> List[Dict[str, Any]]:
             elif file.type == "application/pdf":
                 content = extract_text_from_pdf(file)
             else:
-                st.error(f"Unsupported file type: {file.type}")
+                st.error(f"Tipo de archivo no soportado: {file.type}")
                 continue
                 
             if content.strip():
@@ -74,16 +74,16 @@ def process_uploaded_files(uploaded_files) -> List[Dict[str, Any]]:
                     "type": file.type
                 })
             else:
-                st.error(f"No text content found in {file.name}")
+                st.error(f"No se encontró contenido de texto en {file.name}")
                 
         except Exception as e:
-            st.error(f"Error processing {file.name}: {str(e)}")
+            st.error(f"Error al procesar {file.name}: {str(e)}")
             
     return processed_files
 
 def display_kpis(kpis: Dict[str, Any]):
-    """Display KPIs in a dashboard format"""
-    st.subheader("📊 Key Performance Indicators")
+    """Mostrar KPIs en formato de panel"""
+    st.subheader("📊 Indicadores Clave de Desempeño")
     
     col1, col2, col3 = st.columns(3)
     
@@ -93,98 +93,98 @@ def display_kpis(kpis: Dict[str, Any]):
         st.metric(
             label="Net Promoter Score (NPS)",
             value=f"{nps_value}",
-            help=f"Promoters: {nps_data.get('promoters', 0)}%, Detractors: {nps_data.get('detractors', 0)}%, Passives: {nps_data.get('passives', 0)}%"
+            help=f"Promotores: {nps_data.get('promoters', 0)}%, Detractores: {nps_data.get('detractors', 0)}%, Pasivos: {nps_data.get('passives', 0)}%"
         )
         if nps_data.get('simulated'):
-            st.caption("*Simulated by LLM")
+            st.caption("*Simulado por LLM")
     
     with col2:
         csat_data = kpis.get('csat', {})
         csat_value = csat_data.get('mean', 0)
         st.metric(
-            label="Customer Satisfaction (CSAT)",
+            label="Satisfacción del Cliente (CSAT)",
             value=f"{csat_value:.1f}/5.0",
         )
         if csat_data.get('simulated'):
-            st.caption("*Simulated by LLM")
+            st.caption("*Simulado por LLM")
     
     with col3:
         sentiment_data = kpis.get('sentiment', {})
         pos_avg = sentiment_data.get('pos', 0)
         st.metric(
-            label="Positive Sentiment",
+            label="Sentimiento Positivo",
             value=f"{pos_avg:.2f}",
-            help=f"Average sentiment scores - Negative: {sentiment_data.get('neg', 0):.2f}, Neutral: {sentiment_data.get('neu', 0):.2f}"
+            help=f"Puntajes promedio de sentimiento - Negativo: {sentiment_data.get('neg', 0):.2f}, Neutral: {sentiment_data.get('neu', 0):.2f}"
         )
 
 def display_topics(topics: List[Dict[str, Any]]):
-    """Display topics analysis"""
-    st.subheader("🏷️ Discovered Topics")
+    """Mostrar análisis de temas"""
+    st.subheader("🏷️ Temas Descubiertos")
     
     if not topics:
-        st.info("No topics discovered in the analysis.")
+        st.info("No se descubrieron temas en el análisis.")
         return
     
-    # Create DataFrame for topics
+    # Crear DataFrame para los temas
     topics_df = pd.DataFrame([
         {
-            "Topic ID": topic['topic_id'],
-            "Label": topic['label'],
-            "Keywords": ", ".join(topic.get('keywords', [])),
-            "Description": topic['description'][:100] + "..." if len(topic['description']) > 100 else topic['description']
+            "ID de Tema": topic['topic_id'],
+            "Etiqueta": topic['label'],
+            "Palabras Clave": ", ".join(topic.get('keywords', [])),
+            "Descripción": topic['description'][:100] + "..." if len(topic['description']) > 100 else topic['description']
         }
         for topic in topics
     ])
     
     st.dataframe(topics_df, width='stretch')
     
-    # Topic details in expandable sections
-    st.subheader("📝 Topic Summaries")
+    # Detalles de temas en secciones expandibles
+    st.subheader("📝 Resúmenes de Temas")
     for topic in topics:
-        with st.expander(f"Topic {topic['topic_id']}: {topic['label']}"):
-            st.write(f"**Description:** {topic['description']}")
-            st.write(f"**Keywords:** {', '.join(topic.get('keywords', []))}")
-            st.write(f"**Summary:** {topic.get('summary', 'No summary available')}")
+        with st.expander(f"Tema {topic['topic_id']}: {topic['label']}"):
+            st.write(f"**Descripción:** {topic['description']}")
+            st.write(f"**Palabras Clave:** {', '.join(topic.get('keywords', []))}")
+            st.write(f"**Resumen:** {topic.get('summary', 'No hay resumen disponible')}")
             
             bullets = topic.get('bullets', [])
             if bullets:
-                st.write("**Key Points:**")
+                st.write("**Puntos Clave:**")
                 for bullet in bullets:
                     st.write(bullet)
 
 def display_recommendations(recommendations: List[Dict[str, Any]]):
-    """Display SMART recommendations"""
-    st.subheader("💡 SMART Recommendations")
+    """Mostrar recomendaciones SMART"""
+    st.subheader("💡 Recomendaciones SMART")
     
     if not recommendations:
-        st.info("No recommendations generated.")
+        st.info("No se generaron recomendaciones.")
         return
     
-    # Group by topic
+    # Agrupar por tema
     topic_recs = {}
     for rec in recommendations:
-        topic_id = rec.get('topic_id', 'Unknown')
+        topic_id = rec.get('topic_id', 'Desconocido')
         if topic_id not in topic_recs:
             topic_recs[topic_id] = []
         topic_recs[topic_id].append(rec)
     
     for topic_id, recs in topic_recs.items():
-        st.write(f"**Topic {topic_id} Recommendations:**")
+        st.write(f"**Recomendaciones del Tema {topic_id}:**")
         
         for i, rec in enumerate(recs, 1):
-            with st.expander(f"Recommendation {i}: {rec.get('what', 'No title')[:50]}..."):
+            with st.expander(f"Recomendación {i}: {rec.get('what', 'Sin título')[:50]}..."):
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.write(f"**What:** {rec.get('what', 'Not specified')}")
-                    st.write(f"**Who:** {rec.get('who', 'Not specified')}")
-                    st.write(f"**When:** {rec.get('when', 'Not specified')}")
+                    st.write(f"**Qué:** {rec.get('what', 'No especificado')}")
+                    st.write(f"**Quién:** {rec.get('who', 'No especificado')}")
+                    st.write(f"**Cuándo:** {rec.get('when', 'No especificado')}")
                 
                 with col2:
-                    st.write(f"**Metric:** {rec.get('metric', 'Not specified')}")
-                    st.write(f"**Impact:** {rec.get('impact', 'Not specified')}")
+                    st.write(f"**Métrica:** {rec.get('metric', 'No especificado')}")
+                    st.write(f"**Impacto:** {rec.get('impact', 'No especificado')}")
                     
-                    tag = rec.get('tag', 'Unknown')
+                    tag = rec.get('tag', 'Desconocido')
                     tag_colors = {
                         'quick win': '🟢',
                         'proceso': '🔵', 
@@ -192,28 +192,28 @@ def display_recommendations(recommendations: List[Dict[str, Any]]):
                         'formación': '🟡',
                         'política': '🔴'
                     }
-                    st.write(f"**Tag:** {tag_colors.get(tag, '⚪')} {tag}")
+                    st.write(f"**Etiqueta:** {tag_colors.get(tag, '⚪')} {tag}")
 
 def display_message_assignments(assignments: List[Dict[str, Any]], conversations: List[Dict[str, Any]]):
-    """Display sample message assignments"""
-    st.subheader("💬 Message Analysis Sample")
+    """Mostrar muestra de asignaciones de mensajes"""
+    st.subheader("💬 Muestra de Análisis de Mensajes")
     
     if not assignments:
-        st.info("No message assignments available.")
+        st.info("No hay asignaciones de mensajes disponibles.")
         return
     
-    # Show first 10 assignments as sample
+    # Mostrar primeras 10 asignaciones como muestra
     sample_assignments = assignments[:10]
     
     assignments_df = pd.DataFrame([
         {
-            "Conversation ID": assign.get('conversation_id', 'Unknown'),
-            "Topic ID": assign.get('topic_id', 'Unknown'),
-            "Sentiment": assign.get('sentiment_label', 'Unknown'),
-            "Sentiment Score": f"{assign.get('sentiment_score', 0):.2f}",
-            "Emotion (GEW)": assign.get('familia_gew', 'Unknown'),
-            "Emotion Intensity": f"{assign.get('intensidad', 0)}/5",
-            "Valence": f"{assign.get('valencia', 0):.2f}"
+            "ID de Conversación": assign.get('conversation_id', 'Desconocido'),
+            "ID de Tema": assign.get('topic_id', 'Desconocido'),
+            "Sentimiento": assign.get('sentiment_label', 'Desconocido'),
+            "Puntaje de Sentimiento": f"{assign.get('sentiment_score', 0):.2f}",
+            "Emoción (GEW)": assign.get('familia_gew', 'Desconocido'),
+            "Intensidad de Emoción": f"{assign.get('intensidad', 0)}/5",
+            "Valencia": f"{assign.get('valencia', 0):.2f}"
         }
         for assign in sample_assignments
     ])
@@ -221,64 +221,64 @@ def display_message_assignments(assignments: List[Dict[str, Any]], conversations
     st.dataframe(assignments_df, width='stretch')
     
     if len(assignments) > 10:
-        st.caption(f"Showing 10 of {len(assignments)} total message assignments. Full data available in export.")
+        st.caption(f"Mostrando 10 de {len(assignments)} asignaciones de mensajes en total. Datos completos disponibles en la exportación.")
 
 def export_results(results: Dict[str, Any], run_id: str):
-    """Create export files"""
-    st.subheader("📥 Export Results")
+    """Crear archivos de exportación"""
+    st.subheader("📥 Exportar Resultados")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        # JSON Export
+        # Exportar JSON
         json_str = json.dumps(results, indent=2, ensure_ascii=False)
         st.download_button(
-            label="📄 Download Complete Results (JSON)",
+            label="📄 Descargar Resultados Completos (JSON)",
             data=json_str,
             file_name=f"voc_analysis_{run_id}.json",
             mime="application/json"
         )
     
     with col2:
-        # CSV Export for topics
+        # Exportar CSV para temas
         if results.get('topics'):
             topics_df = pd.DataFrame([
                 {
-                    "Topic ID": topic['topic_id'],
-                    "Label": topic['label'],
-                    "Description": topic['description'],
-                    "Keywords": ", ".join(topic.get('keywords', [])),
-                    "Summary": topic.get('summary', ''),
+                    "ID de Tema": topic['topic_id'],
+                    "Etiqueta": topic['label'],
+                    "Descripción": topic['description'],
+                    "Palabras Clave": ", ".join(topic.get('keywords', [])),
+                    "Resumen": topic.get('summary', ''),
                 }
                 for topic in results['topics']
             ])
             
             csv_data = topics_df.to_csv(index=False)
             st.download_button(
-                label="📊 Download Topics (CSV)",
+                label="📊 Descargar Temas (CSV)",
                 data=csv_data,
                 file_name=f"voc_topics_{run_id}.csv",
                 mime="text/csv"
             )
 
-# Main UI
-st.title("📊 VoC Analyst - LLM-Powered Analysis")
-st.write("Transform customer interaction transcripts into actionable insights using advanced LLM analysis")
+# Interfaz principal
+st.title("📊 VoC Analyst - Análisis con LLM")
+st.write("Transforma transcripciones de interacciones con clientes en información accionable usando análisis avanzado con LLM")
 
-# Sidebar for configuration
+# Barra lateral de configuración
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.header("⚙️ Configuración")
     
-    # Model Selection
-    st.subheader("🤖 Select LLM Model")
+    # Selección de modelo
+    st.subheader("🤖 Selecciona el Modelo LLM")
     
     provider = st.selectbox(
-        "Provider",
+        "Proveedor",
         ["OpenAI", "Anthropic", "Gemini"],
         key="provider_select"
     )
     
-    # Model options based on provider
+    # Opciones de modelo según proveedor
     model_options = {
         "OpenAI": [
             "gpt-5",
@@ -301,12 +301,12 @@ with st.sidebar:
     }
     
     model = st.selectbox(
-        "Model",
+        "Modelo",
         model_options[provider],
         key="model_select"
     )
     
-    # API Key input (with environment variable fallback)
+    # Entrada de API Key (con variable de entorno como respaldo)
     api_key_labels = {
         "OpenAI": "OPENAI_API_KEY",
         "Anthropic": "ANTHROPIC_API_KEY", 
@@ -315,85 +315,85 @@ with st.sidebar:
     
     api_key_env = api_key_labels[provider]
     api_key = st.text_input(
-        f"{provider} API Key",
+        f"Clave API de {provider}",
         type="password",
         value=os.getenv(api_key_env, ""),
-        help=f"Enter your {provider} API key or set {api_key_env} environment variable"
+        help=f"Ingrese su clave API de {provider} o configure la variable de entorno {api_key_env}"
     )
     
     if not api_key:
-        st.warning(f"Please provide {provider} API key to proceed")
+        st.warning(f"Por favor proporcione la clave API de {provider} para continuar")
 
-# Main content area
-tab1, tab2, tab3 = st.tabs(["📁 Upload & Process", "📊 Dashboard", "📥 Export"])
+# Área de contenido principal
+tab1, tab2, tab3 = st.tabs(["📁 Subir y Procesar", "📊 Panel", "📥 Exportar"])
 
 with tab1:
-    st.header("Upload Customer Interaction Files")
-    st.write("Upload TXT or PDF files containing customer-agent conversations. Each file should contain exactly one interaction.")
+    st.header("Subir Archivos de Interacciones con Clientes")
+    st.write("Suba archivos TXT o PDF que contengan conversaciones cliente-agente. Cada archivo debe contener exactamente una interacción.")
     
-    # File uploader
+    # Cargador de archivos
     uploaded_files = st.file_uploader(
-        "Choose files",
+        "Seleccionar archivos",
         type=['txt', 'pdf'],
         accept_multiple_files=True,
-        help="Upload .txt or .pdf files (max 100MB each). Each file should contain one customer interaction."
+        help="Suba archivos .txt o .pdf (máx 100MB cada uno). Cada archivo debe contener una interacción de cliente."
     )
     
     if uploaded_files:
-        st.write(f"📁 {len(uploaded_files)} file(s) uploaded")
+        st.write(f"📁 {len(uploaded_files)} archivo(s) cargado(s)")
         
-        # Process files
-        if st.button("🔍 Process Files", disabled=not api_key):
-            with st.spinner("Processing uploaded files..."):
+        # Procesar archivos
+        if st.button("🔍 Procesar Archivos", disabled=not api_key):
+            with st.spinner("Procesando archivos cargados..."):
                 processed_files = process_uploaded_files(uploaded_files)
                 st.session_state.uploaded_files_data = processed_files
                 
             if processed_files:
-                st.success(f"✅ Successfully processed {len(processed_files)} files")
+                st.success(f"✅ {len(processed_files)} archivos procesados exitosamente")
                 
-                # Show file summary
+                # Mostrar resumen de archivos
                 files_df = pd.DataFrame([
                     {
-                        "Filename": f['filename'],
-                        "Type": f['type'],
-                        "Size (chars)": f['size']
+                        "Archivo": f['filename'],
+                        "Tipo": f['type'],
+                        "Tamaño (caracteres)": f['size']
                     }
                     for f in processed_files
                 ])
                 st.dataframe(files_df, width='stretch')
 
-    # Show analysis button if files are processed and stored in session state
+    # Mostrar botón de análisis si hay archivos procesados en estado de sesión
     if st.session_state.uploaded_files_data:
-        st.write("📋 Files ready for analysis:")
+        st.write("📋 Archivos listos para análisis:")
         
-        # Show summary of processed files
+        # Mostrar resumen de archivos procesados
         files_summary_df = pd.DataFrame([
             {
-                "Filename": f['filename'],
-                "Type": f['type'],
-                "Size (chars)": f['size']
+                "Archivo": f['filename'],
+                "Tipo": f['type'],
+                "Tamaño (caracteres)": f['size']
             }
             for f in st.session_state.uploaded_files_data
         ])
         st.dataframe(files_summary_df, width='stretch')
         
-        # Analysis button - now always available when files are processed
-        if st.button("🚀 Analyze with LLM", disabled=not api_key):
+        # Botón de análisis - siempre disponible cuando hay archivos procesados
+        if st.button("🚀 Analizar con LLM", disabled=not api_key):
             processed_files = st.session_state.uploaded_files_data
             if not api_key:
-                st.error("API key is required for analysis")
+                st.error("Se requiere clave API para el análisis")
             else:
-                # Create model config
+                # Crear configuración del modelo
                 model_config = ModelConfig(
                     provider=provider.lower(),
                     model=model,
                     api_key=api_key
                 )
                 
-                # Initialize LLM backend
+                # Inicializar backend LLM
                 backend = LLMBackend(model_config)
                 
-                # Generate run ID
+                # Generar ID de ejecución
                 run_id = str(uuid.uuid4())[:8]
                 st.session_state.run_id = run_id
                 
@@ -401,84 +401,85 @@ with tab1:
                 status_text = st.empty()
                 
                 try:
-                    # Optimized: Single LLM call for batch processing
-                    status_text.text("🚀 Processing all files with LLM in batch (faster)...")
+                    # Optimizado: Llamada única al LLM para procesamiento en lote
+                    status_text.text("🚀 Procesando todos los archivos con LLM en lote (más rápido)...")
                     progress_bar.progress(50)
                     
-                    st.write(f"🔬 Analyzing {len(processed_files)} files in batch...")
+                    st.write(f"🔬 Analizando {len(processed_files)} archivos en lote...")
                     
-                    # Use batch processing for better performance
+                    # Usar procesamiento en lote para mejor rendimiento
                     analysis_results = backend.analyze_conversations_batch(processed_files)
                     
                     if analysis_results and isinstance(analysis_results, dict):
                         progress_bar.progress(100)
-                        status_text.text("✅ Analysis complete!")
+                        status_text.text("✅ ¡Análisis completo!")
                         
-                        # Store results
+                        # Guardar resultados
                         st.session_state.analysis_results = analysis_results
                         st.session_state.processing_complete = True
                         
-                        # Show summary
+                        # Mostrar resumen
                         topics_count = len(analysis_results.get('topics', []))
                         recs_count = len(analysis_results.get('recommendations', []))
                         
-                        st.success(f"🎉 Analysis completed successfully! Run ID: {run_id}")
-                        st.write(f"📊 Found {topics_count} topics and {recs_count} recommendations")
-                        st.info("👉 Check the Dashboard tab to view results")
+                        st.success(f"🎉 ¡Análisis completado exitosamente! ID de ejecución: {run_id}")
+                        st.write(f"📊 Se encontraron {topics_count} temas y {recs_count} recomendaciones")
+                        st.info("👉 Revise la pestaña Panel para ver resultados")
                     else:
-                        st.error("❌ Analysis failed - No valid results returned")
+                        st.error("❌ Falló el análisis - No se devolvieron resultados válidos")
                             
                 except Exception as e:
-                    st.error(f"❌ Analysis failed: {str(e)}")
+                    st.error(f"❌ Falló el análisis: {str(e)}")
                     import traceback
-                    st.text("Debug info:")
+                    st.text("Información de depuración:")
                     st.code(traceback.format_exc())
                 finally:
                     progress_bar.empty()
                     status_text.empty()
 
 with tab2:
-    st.header("Analysis Dashboard")
+    st.header("Panel de Análisis")
     
     if st.session_state.analysis_results:
         results = st.session_state.analysis_results
         
-        # Display KPIs
+        # Mostrar KPIs
         if 'kpis' in results:
             display_kpis(results['kpis'])
         
         st.divider()
         
-        # Display Topics
+        # Mostrar Temas
         if 'topics' in results:
             display_topics(results['topics'])
         
         st.divider()
         
-        # Display Recommendations
+        # Mostrar Recomendaciones
         if 'recommendations' in results:
             display_recommendations(results['recommendations'])
         
         st.divider()
         
-        # Display Message Assignments Sample
+        # Mostrar Muestra de Asignaciones de Mensajes
         if 'message_assignments' in results:
             display_message_assignments(
                 results['message_assignments'],
                 results.get('conversations', [])
             )
     else:
-        st.info("📈 No analysis results available. Please upload and process files first.")
+        st.info("📈 No hay resultados de análisis disponibles. Por favor cargue y procese archivos primero.")
 
 with tab3:
-    st.header("Export Results")
+    st.header("Exportar Resultados")
     
     if st.session_state.analysis_results and st.session_state.run_id:
         export_results(st.session_state.analysis_results, st.session_state.run_id)
     else:
-        st.info("📦 No results available for export. Please complete an analysis first.")
+        st.info("📦 No hay resultados disponibles para exportar. Por favor complete un análisis primero.")
 
-# Footer
+# Pie de página
 st.divider()
-st.caption("VoC Analyst - Powered by LLM technology for comprehensive customer voice analysis")
+st.caption("VoC Analyst - Impulsado por tecnología LLM para un análisis integral de la voz del cliente")
+
 
